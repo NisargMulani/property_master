@@ -3,13 +3,16 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const requestLogger = require('./middleware/logger');
 
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));         // Increased for Base64 image payloads
+app.use(requestLogger);                           // Log every request: IP, time, method, status
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
 
 // Serve uploaded images as static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -23,16 +26,14 @@ app.use('/api/admin', require('./routes/admin'));
 async function seedDefaultAdmin() {
   const User = require('./models/User');
   const ADMIN_EMAIL = 'admin@gmail.com';
-  const ADMIN_PASS  = 'admin123';
+  const ADMIN_PASS = 'admin123';
 
   const existing = await User.findOne({ email: ADMIN_EMAIL });
   if (existing) {
     // Make sure existing account has admin role
     if (existing.role !== 'admin') {
       await User.updateOne({ email: ADMIN_EMAIL }, { role: 'admin' });
-      console.log('🔑  Default admin role updated.');
-    } else {
-      console.log('✅  Default admin already exists.');
+      console.log('Default admin role updated.');
     }
     return;
   }
@@ -40,10 +41,10 @@ async function seedDefaultAdmin() {
   await User.create({
     name: 'Admin',
     email: ADMIN_EMAIL,
-    password: ADMIN_PASS,   // hashed by pre-save hook in User model
+    password: ADMIN_PASS,
     role: 'admin',
   });
-  console.log('✅  Default admin created  →  admin@gmail.com / admin123');
+  console.log('admin created  →  admin@gmail.com / admin123');
 }
 
 // Connect to MongoDB, then seed & start server
