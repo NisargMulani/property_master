@@ -9,6 +9,8 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const isAdmin = user?.role === 'admin';
+
   async function signup(name, email, password) {
     const res = await API.post('/auth/signup', { name, email, password });
     localStorage.setItem('token', res.data.token);
@@ -30,7 +32,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

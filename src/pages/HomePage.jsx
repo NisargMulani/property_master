@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import LoginModal from '../components/LoginModal';
@@ -33,11 +33,22 @@ const galleryItems = [
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showLogin, setShowLogin] = useState(false);
   const [category, setCategory] = useState('Buy');
   const [searchTerm, setSearchTerm] = useState('');
   const [newLaunches, setNewLaunches] = useState([]);
   const [activeModal, setActiveModal] = useState(null);
+
+  // Auto-open login modal when ?login=1 is in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('login') === '1') {
+      setShowLogin(true);
+      // Clean the query param without pushing new history entry
+      navigate('/', { replace: true });
+    }
+  }, [location.search]);
 
   // Budget state
   const [savings, setSavings] = useState(2000000);

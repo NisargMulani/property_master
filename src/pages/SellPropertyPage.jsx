@@ -6,6 +6,30 @@ import LoginModal from '../components/LoginModal';
 import { useAuth } from '../context/AuthContext';
 import API from '../api';
 
+// Convert a File to a compressed Base64 JPEG data URI (max 1024px, 85% quality)
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1024;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round((height * MAX) / width); width = MAX; }
+        else { width = Math.round((width * MAX) / height); height = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.src = url;
+  });
+}
+
 export default function SellPropertyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -25,6 +49,7 @@ export default function SellPropertyPage() {
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
   const [error, setError] = useState('');
 
   function handleImageChange(e) {
@@ -39,14 +64,14 @@ export default function SellPropertyPage() {
     if (images.length === 0) { setError('Please select at least one image.'); return; }
 
     setLoading(true);
+    setLoadingStep('Compressing images...');
     setError('');
     try {
-      const formData = new FormData();
-      images.forEach(img => formData.append('images', img));
-      const uploadRes = await API.post('/properties/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // Compress + convert all images to Base64 data URIs
+      const base64Images = await Promise.all(images.map(fileToBase64));
 
+      setLoadingStep('Saving to database...');
+      // Single API call — images stored directly in MongoDB
       await API.post('/properties', {
         listing_type: listingType,
         property_type: propertyType,
@@ -56,7 +81,7 @@ export default function SellPropertyPage() {
         price: parseFloat(price),
         description,
         contact_number: contactNumber,
-        image_urls: uploadRes.data.image_urls,
+        image_urls: base64Images,   // Compressed Base64 data URIs stored in MongoDB
         is_new_launch: isNewLaunch,
       });
 
@@ -66,8 +91,10 @@ export default function SellPropertyPage() {
       setError(err.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
+      setLoadingStep('');
     }
   }
+
 
   return (
     <div>
@@ -192,7 +219,7 @@ export default function SellPropertyPage() {
             {error && <p className="error-msg">{error}</p>}
 
             <button type="submit" className="btn-orange btn-full submit-btn" disabled={loading}>
-              {loading ? 'Submitting...' : 'List Property Now'}
+              {loading ? loadingStep || 'Processing...' : 'List Property Now'}
             </button>
 
           </form>

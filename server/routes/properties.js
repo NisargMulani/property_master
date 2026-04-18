@@ -1,45 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const Property = require('../models/Property');
-const authenticateToken = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
-// --- Multer Setup ---
-const uploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname.replace(/\s+/g, '_');
-    cb(null, uniqueName);
-  },
-});
-
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) cb(null, true);
-    else cb(new Error('Only image files are allowed.'), false);
-  },
-});
-
-// GET /api/properties  (public - no auth needed)
+// GET /api/properties  (public)
 router.get('/', async (req, res) => {
   try {
     const { listing_type, property_group, search, is_new_launch } = req.query;
     let filter = {};
 
-    // Filter by listing type
     if (listing_type) {
       filter.listing_type = listing_type;
     }
 
-    // Filter by property group
     if (property_group) {
       const group = property_group.toLowerCase();
       if (group === 'residential') {
@@ -51,12 +24,10 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // Filter new launches
     if (is_new_launch === 'true') {
       filter.is_new_launch = true;
     }
 
-    // Text search (city, state, address, description)
     if (search) {
       filter.$text = { $search: search };
     }
@@ -68,20 +39,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/properties/upload  (protected - upload images first)
-router.post('/upload', authenticateToken, upload.array('images', 10), (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ message: 'No images uploaded.' });
-  }
-
-  const imageUrls = req.files.map(
-    (file) => `http://localhost:5000/uploads/${file.filename}`
-  );
-
-  res.json({ image_urls: imageUrls });
-});
-
-// POST /api/properties  (protected - create listing)
+// POST /api/properties  (protected — create listing with Base64 images in body)
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const {
@@ -89,6 +47,19 @@ router.post('/', authenticateToken, async (req, res) => {
       area_sqft, bhk, price, description, contact_number,
       image_urls, is_new_launch,
     } = req.body;
+
+    // Validate at least one image
+    if (!image_urls || image_urls.length === 0) {
+      return res.status(400).json({ message: 'At least one image is required.' });
+    }
+
+    // Basic validation that each entry looks like a data URI or a URL
+    const validImages = image_urls.filter(
+      url => typeof url === 'string' && (url.startsWith('data:image/') || url.startsWith('http'))
+    );
+    if (validImages.length === 0) {
+      return res.status(400).json({ message: 'No valid images provided.' });
+    }
 
     const property = new Property({
       user_id: req.user.id,
@@ -102,7 +73,7 @@ router.post('/', authenticateToken, async (req, res) => {
       price: parseFloat(price),
       description,
       contact_number,
-      image_urls: image_urls || [],
+      image_urls: validImages,   // Stored as Base64 data URIs in MongoDB
       is_new_launch: is_new_launch || false,
     });
 
@@ -114,3 +85,4 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 module.exports = router;
+

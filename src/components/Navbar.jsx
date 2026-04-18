@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ showSearch = false }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
@@ -16,6 +16,13 @@ export default function Navbar({ showSearch = false }) {
 
   function handleKeyDown(e) {
     if (e.key === 'Enter') handleSearch();
+  }
+
+  // Get initials from user name or email
+  function getInitials() {
+    if (!user) return '?';
+    const src = user.name || user.email || '';
+    return src.slice(0, 2).toUpperCase();
   }
 
   return (
@@ -63,13 +70,17 @@ export default function Navbar({ showSearch = false }) {
         {/* User avatar */}
         <div className="navbar-right">
           <button
-            className="user-avatar-btn"
+            className={`user-avatar-btn${user ? ' user-avatar-btn--loggedin' : ''}`}
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="User menu"
           >
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+            {user ? (
+              <span className="user-avatar-initials">{getInitials()}</span>
+            ) : (
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            )}
           </button>
 
           {menuOpen && (
@@ -78,9 +89,18 @@ export default function Navbar({ showSearch = false }) {
                 <>
                   <div className="user-menu-header">
                     <p>Signed in as:</p>
-                    <p>{user.email}</p>
+                    <p>{user.name || user.email}</p>
                   </div>
                   <div className="user-menu-body">
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="user-menu-admin-link"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
                     <button onClick={() => { logout(); setMenuOpen(false); }}>
                       Sign Out
                     </button>
