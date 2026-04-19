@@ -12,6 +12,5 @@ export function formatCurrency(val) {
   return '₹ ' + n.toLocaleString('en-IN');
 }
 
-export const authHeader = () => ({
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-});
+// Note: auth token is automatically attached by the API interceptor in api.js
+// Do NOT manually read localStorage here — use the API instance for all requests

@@ -6,7 +6,7 @@ import AdminDashboard           from '../components/admin/AdminDashboard';
 import AdminUsersTable          from '../components/admin/AdminUsersTable';
 import AdminPropertiesTable     from '../components/admin/AdminPropertiesTable';
 import ConfirmDialog            from '../components/admin/ConfirmDialog';
-import { authHeader }           from '../components/admin/adminUtils';
+
 import API from '../api';
 
 export default function AdminPage() {
@@ -33,14 +33,14 @@ export default function AdminPage() {
 
   // Load stats once
   useEffect(() => {
-    API.get('/admin/stats', authHeader())
+    API.get('/admin/stats')
       .then(r => setStats(r.data))
       .catch(() => {});
   }, []);
 
   const loadUsers = useCallback(() => {
     setUsersLoading(true);
-    API.get('/admin/users', authHeader())
+    API.get('/admin/users')
       .then(r => setUsers(r.data))
       .catch(() => {})
       .finally(() => setUsersLoading(false));
@@ -48,7 +48,7 @@ export default function AdminPage() {
 
   const loadProperties = useCallback(() => {
     setPropsLoading(true);
-    API.get('/admin/properties', authHeader())
+    API.get('/admin/properties')
       .then(r => setProperties(r.data))
       .catch(() => {})
       .finally(() => setPropsLoading(false));
@@ -61,7 +61,7 @@ export default function AdminPage() {
 
   // ── User actions ─────────────────────────────────────────
   async function toggleRole(u) {
-    await API.patch(`/admin/users/${u._id}`, { role: u.role === 'admin' ? 'user' : 'admin' }, authHeader());
+    await API.patch(`/admin/users/${u._id}`, { role: u.role === 'admin' ? 'user' : 'admin' });
     loadUsers();
   }
 
@@ -69,7 +69,7 @@ export default function AdminPage() {
     setConfirm({
       message: `Delete user "${u.name || u.email}"? This cannot be undone.`,
       onConfirm: async () => {
-        await API.delete(`/admin/users/${u._id}`, authHeader());
+        await API.delete(`/admin/users/${u._id}`);
         loadUsers();
         setConfirm(null);
       },
@@ -85,7 +85,7 @@ export default function AdminPage() {
 
   // ── Property actions ──────────────────────────────────────
   async function toggleNewLaunch(p) {
-    await API.patch(`/admin/properties/${p._id}`, { is_new_launch: !p.is_new_launch }, authHeader());
+    await API.patch(`/admin/properties/${p._id}`, { is_new_launch: !p.is_new_launch });
     loadProperties();
   }
 
@@ -93,7 +93,7 @@ export default function AdminPage() {
     setConfirm({
       message: `Delete property at "${p.city}"? This cannot be undone.`,
       onConfirm: async () => {
-        await API.delete(`/admin/properties/${p._id}`, authHeader());
+        await API.delete(`/admin/properties/${p._id}`);
         loadProperties();
         setConfirm(null);
       },

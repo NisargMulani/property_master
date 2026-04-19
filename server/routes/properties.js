@@ -33,7 +33,6 @@ router.get('/', async (req, res) => {
     }
 
     const properties = await Property.find(filter)
-      .select('-image_urls')          // exclude heavy base64 from list
       .sort({ createdAt: -1 });
     res.json(properties);
   } catch (err) {
