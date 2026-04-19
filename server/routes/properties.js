@@ -32,8 +32,21 @@ router.get('/', async (req, res) => {
       filter.$text = { $search: search };
     }
 
-    const properties = await Property.find(filter).sort({ createdAt: -1 });
+    const properties = await Property.find(filter)
+      .select('-image_urls')          // exclude heavy base64 from list
+      .sort({ createdAt: -1 });
     res.json(properties);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+});
+
+// GET /api/properties/:id  (public — full document including image_urls)
+router.get('/:id', async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) return res.status(404).json({ message: 'Property not found.' });
+    res.json(property);
   } catch (err) {
     res.status(500).json({ message: 'Server error: ' + err.message });
   }
