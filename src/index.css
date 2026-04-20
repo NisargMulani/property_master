@@ -1052,8 +1052,13 @@ input[type="file"] {
 }
 
 @keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .prop-modal-images img.main-img {
@@ -2375,15 +2380,13 @@ input[type="file"] {
   width: 100%;
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
-  font-weight: 600;
-  color: #065f46;
-  background: #d1fae5;
   border-radius: 6px;
   text-decoration: none;
   margin-bottom: 0.3rem;
   transition: background 0.2s;
+  color: #374151;
 }
 
 .user-menu-my-listings-link:hover {
-  background: #a7f3d0;
-}
+  background: #f3f4f6;
+}

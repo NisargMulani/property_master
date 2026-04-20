@@ -33,26 +33,26 @@ export default function UpdatePropertyModal({ property, onClose, onUpdated }) {
   const p = property;
 
   // Pre-fill all fields from the existing property
-  const [listingType,    setListingType   ] = useState(p.listing_type    || 'Sell Property');
-  const [propertyType,   setPropertyType  ] = useState(p.property_type   || '');
-  const [city,           setCity          ] = useState(p.city            || '');
-  const [state,          setState         ] = useState(p.state           || '');
-  const [address,        setAddress       ] = useState(p.address         || '');
-  const [area,           setArea          ] = useState(p.area_sqft       || '');
-  const [bhk,            setBhk           ] = useState(p.bhk             || '');
-  const [price,          setPrice         ] = useState(p.price           || '');
-  const [description,    setDescription   ] = useState(p.description     || '');
-  const [contactNumber,  setContactNumber ] = useState(p.contact_number  || '');
-  const [isNewLaunch,    setIsNewLaunch   ] = useState(p.is_new_launch   || false);
+  const [listingType, setListingType] = useState(p.listing_type || 'Sell Property');
+  const [propertyType, setPropertyType] = useState(p.property_type || '');
+  const [city, setCity] = useState(p.city || '');
+  const [state, setState] = useState(p.state || '');
+  const [address, setAddress] = useState(p.address || '');
+  const [area, setArea] = useState(p.area_sqft || '');
+  const [bhk, setBhk] = useState(p.bhk || '');
+  const [price, setPrice] = useState(p.price || '');
+  const [description, setDescription] = useState(p.description || '');
+  const [contactNumber, setContactNumber] = useState(p.contact_number || '');
+  const [isNewLaunch, setIsNewLaunch] = useState(p.is_new_launch || false);
 
   // Images: start with existing; new files override
-  const [newImageFiles,    setNewImageFiles   ] = useState([]);
+  const [newImageFiles, setNewImageFiles] = useState([]);
   const [newImagePreviews, setNewImagePreviews] = useState([]);
   const existingImages = p.image_urls || [];
 
-  const [loading,     setLoading    ] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
-  const [error,       setError      ] = useState('');
+  const [error, setError] = useState('');
 
   function handleImageChange(e) {
     const files = Array.from(e.target.files);
@@ -76,15 +76,15 @@ export default function UpdatePropertyModal({ property, onClose, onUpdated }) {
       }
 
       await API.put(`/properties/${p._id}`, {
-        listing_type:   listingType,
-        property_type:  propertyType,
+        listing_type: listingType,
+        property_type: propertyType,
         city, state, address,
-        area_sqft:      parseFloat(area),
-        bhk:            bhk ? parseInt(bhk) : null,
-        price:          parseFloat(price),
+        area_sqft: parseFloat(area),
+        bhk: bhk ? parseInt(bhk) : null,
+        price: parseFloat(price),
         description,
         contact_number: contactNumber,
-        is_new_launch:  isNewLaunch,
+        is_new_launch: isNewLaunch,
         ...(imagePayload ? { image_urls: imagePayload } : {}),
       });
 
@@ -221,7 +221,7 @@ export default function UpdatePropertyModal({ property, onClose, onUpdated }) {
               </div>
             )}
             {newImagePreviews.length > 0 && (
-              <p className="update-img-replace-note">✓ {newImagePreviews.length} new image(s) will replace existing ones</p>
+              <p className="update-img-replace-note"> {newImagePreviews.length} new image(s) will replace existing ones</p>
             )}
           </div>
 
