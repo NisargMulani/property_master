@@ -1,4 +1,4 @@
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 // Ensure logs directory exists
@@ -9,20 +9,20 @@ if (!fs.existsSync(logsDir)) {
 
 // Log file path (one file per day)
 function getLogFile() {
-  const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const date = new Date().toISOString().slice(0, 10);
   return path.join(logsDir, `${date}.log`);
 }
 
 // ANSI colour helpers (console only)
 const c = {
-  reset:  '\x1b[0m',
-  dim:    '\x1b[2m',
-  green:  '\x1b[32m',
+  reset: '\x1b[0m',
+  dim: '\x1b[2m',
+  green: '\x1b[32m',
   yellow: '\x1b[33m',
-  red:    '\x1b[31m',
-  cyan:   '\x1b[36m',
-  white:  '\x1b[37m',
-  bold:   '\x1b[1m',
+  red: '\x1b[31m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m',
+  bold: '\x1b[1m',
 };
 
 function statusColor(status) {
@@ -49,14 +49,14 @@ function getIP(req) {
 
 // Logger middleware
 function requestLogger(req, res, next) {
-  const startAt  = Date.now();
-  const ip       = getIP(req);
-  const method   = req.method;
-  const url      = req.originalUrl || req.url;
+  const startAt = Date.now();
+  const ip = getIP(req);
+  const method = req.method;
+  const url = req.originalUrl || req.url;
 
   res.on('finish', () => {
     const duration = Date.now() - startAt;
-    const status   = res.statusCode;
+    const status = res.statusCode;
 
     // ISO timestamp
     const now = new Date();

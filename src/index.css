@@ -21,7 +21,7 @@ body {
 
 /* === Layout === */
 .container {
-  max-width: 90%;
+  /* max-width: 90%; */
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -705,6 +705,19 @@ body {
   flex: 1;
   height: 1px;
   background: #e5e7eb;
+}
+
+/* === Google Sign-In Button === */
+.google-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.google-btn-wrapper > div,
+.google-btn-wrapper iframe {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 /* === Forms === */

@@ -1,14 +1,69 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+function initGoogleButton(ref, isLogin, callback) {
+  if (!ref || !window.google?.accounts?.id) return;
+  if (!GOOGLE_CLIENT_ID) {
+    console.error('VITE_GOOGLE_CLIENT_ID is not set in .env');
+    return;
+  }
+
+  window.google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback,
+  });
+
+  window.google.accounts.id.renderButton(ref, {
+    theme: 'outline',
+    size: 'large',
+    width: ref.offsetWidth || 380,
+    text: isLogin ? 'signin_with' : 'signup_with',
+    shape: 'rectangular',
+  });
+}
+
 export default function LoginModal({ onClose }) {
-  const { login, signup } = useAuth();
+  const { login, signup, googleLogin } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const googleBtnRef = useRef(null);
+
+  async function handleGoogleResponse(response) {
+    setError('');
+    setLoading(true);
+    try {
+      await googleLogin(response.credential);
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const ref = googleBtnRef.current;
+
+    // If GIS is already loaded, render immediately
+    if (window.google?.accounts?.id) {
+      initGoogleButton(ref, isLogin, handleGoogleResponse);
+      return;
+    }
+
+    // Otherwise wait for the GIS script to finish loading
+    const script = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    if (script) {
+      const onLoad = () => initGoogleButton(ref, isLogin, handleGoogleResponse);
+      script.addEventListener('load', onLoad);
+      return () => script.removeEventListener('load', onLoad);
+    }
+  }, [isLogin]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -38,6 +93,17 @@ export default function LoginModal({ onClose }) {
         </button>
 
         <h2 className="modal-title">{isLogin ? 'Login' : 'Sign Up'}</h2>
+
+        {/* Google Sign-In Button */}
+        <div ref={googleBtnRef} className="google-btn-wrapper" id="google-signin-btn"></div>
+
+        {!GOOGLE_CLIENT_ID && (
+          <p className="error-msg" style={{ textAlign: 'center', fontSize: '0.8rem' }}>
+            ⚠ Google Client ID not configured (VITE_GOOGLE_CLIENT_ID missing in .env)
+          </p>
+        )}
+
+        <div className="divider">OR</div>
 
         <form onSubmit={handleSubmit}>
           {!isLogin && (
@@ -73,18 +139,12 @@ export default function LoginModal({ onClose }) {
             />
           </div>
 
-          {error && (
-            <p className="error-msg">
-              {error}
-            </p>
-          )}
+          {error && <p className="error-msg">{error}</p>}
 
           <button type="submit" className="btn-orange btn-full" disabled={loading}>
             {loading ? 'Please wait...' : isLogin ? 'Continue' : 'Create Account'}
           </button>
         </form>
-
-        <div className="divider">OR</div>
 
         <p className="login-toggle-text">
           {isLogin ? "Don't have an account? " : 'Already have an account? '}
