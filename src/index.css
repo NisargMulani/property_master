@@ -319,7 +319,44 @@ body {
   color: #d1d5db;
 }
 
-/* === Grid Layouts === */
+/* Edit Listing button on property card (My Listings mode) */
+.edit-listing-btn {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+}
+
+/* === Update Property Modal === */
+.update-prop-modal {
+  max-width: 680px;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.update-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.update-modal-actions button {
+  padding: 0.65rem 2rem;
+  font-size: 0.95rem;
+}
+
+.update-img-hint {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.update-img-replace-note {
+  font-size: 0.83rem;
+  color: #16a34a;
+  margin-top: 0.5rem;
+}
+
+
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

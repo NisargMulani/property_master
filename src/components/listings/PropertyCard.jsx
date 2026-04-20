@@ -1,6 +1,6 @@
 import { formatPrice } from './listingUtils';
 
-export default function PropertyCard({ property, onViewDetails }) {
+export default function PropertyCard({ property, onViewDetails, isMyListing, onEdit }) {
   const p     = property;
   const img   = p.image_urls?.[0] || 'https://placehold.co/600x400/040459/FF7142?text=Property+Master';
   const name  = p.address ? p.address.split(',')[0].trim() : p.city;
@@ -26,7 +26,16 @@ export default function PropertyCard({ property, onViewDetails }) {
         >
           View Details
         </button>
+        {isMyListing && (
+          <button
+            className="btn-orange-outline btn-full edit-listing-btn"
+            onClick={() => onEdit(p)}
+          >
+            ✏ Edit Listing
+          </button>
+        )}
       </div>
     </div>
   );
 }
+

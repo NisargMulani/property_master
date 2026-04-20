@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar               from '../components/Navbar';
 import Footer               from '../components/Footer';
@@ -6,6 +6,7 @@ import LoginModal           from '../components/LoginModal';
 import ListingsSearchBar    from '../components/listings/ListingsSearchBar';
 import PropertyGrid         from '../components/listings/PropertyGrid';
 import PropertyDetailModal  from '../components/listings/PropertyDetailModal';
+import UpdatePropertyModal  from '../components/listings/UpdatePropertyModal';
 import { useAuth }          from '../context/AuthContext';
 import API from '../api';
 
@@ -26,6 +27,7 @@ export default function ListingsPage() {
   const [loading,          setLoading         ] = useState(true);
   const [error,            setError           ] = useState('');
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [editProperty,     setEditProperty    ] = useState(null);
   const [showLogin,        setShowLogin       ] = useState(false);
   const [headerSearch,     setHeaderSearch    ] = useState(searchParams.get('search') || '');
 
@@ -34,6 +36,14 @@ export default function ListingsPage() {
   const propertyGroup = searchParams.get('property_group');
   const search        = searchParams.get('search');
   const category      = searchParams.get('category');
+
+  const fetchMyListings = useCallback(() => {
+    setLoading(true);
+    setError('');
+    API.get('/properties/my')
+      .then(res => { setProperties(res.data); setLoading(false); })
+      .catch(err => { setError(err.response?.data?.message || 'Failed to load your listings.'); setLoading(false); });
+  }, []);
 
   // Fetch properties on filter change
   useEffect(() => {
@@ -48,9 +58,7 @@ export default function ListingsPage() {
         setShowLogin(true);
         return;
       }
-      API.get('/properties/my')
-        .then(res => { setProperties(res.data); setLoading(false); })
-        .catch(err => { setError(err.response?.data?.message || 'Failed to load your listings.'); setLoading(false); });
+      fetchMyListings();
       return;
     }
 
@@ -70,13 +78,18 @@ export default function ListingsPage() {
     API.get('/properties', { params })
       .then(res => { setProperties(res.data); setLoading(false); })
       .catch(err => { setError(err.response?.data?.message || 'Failed to load properties.'); setLoading(false); });
-  }, [myOnly, listingType, propertyGroup, search, category, user]);
+  }, [myOnly, listingType, propertyGroup, search, category, user, fetchMyListings]);
 
   function handleHeaderSearch() {
     const newParams = new URLSearchParams(searchParams);
     if (headerSearch.trim()) newParams.set('search', headerSearch.trim());
     else newParams.delete('search');
     setSearchParams(newParams);
+  }
+
+  function handleUpdated() {
+    setEditProperty(null);
+    fetchMyListings();   // refresh the list after save
   }
 
   return (
@@ -112,6 +125,8 @@ export default function ListingsPage() {
           loading={loading}
           error={error}
           onViewDetails={setSelectedProperty}
+          isMyListing={myOnly}
+          onEdit={setEditProperty}
         />
       </main>
 
@@ -121,6 +136,14 @@ export default function ListingsPage() {
         <PropertyDetailModal
           property={selectedProperty}
           onClose={() => setSelectedProperty(null)}
+        />
+      )}
+
+      {editProperty && (
+        <UpdatePropertyModal
+          property={editProperty}
+          onClose={() => setEditProperty(null)}
+          onUpdated={handleUpdated}
         />
       )}
     </div>

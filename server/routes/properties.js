@@ -107,5 +107,54 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/properties/:id  (protected — owner only)
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) return res.status(404).json({ message: 'Property not found.' });
+
+    // Ownership check — only the user who created it can update it
+    if (property.user_id.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ message: 'Forbidden: you do not own this listing.' });
+    }
+
+    const {
+      listing_type, property_type, city, state, address,
+      area_sqft, bhk, price, description, contact_number,
+      image_urls, is_new_launch,
+    } = req.body;
+
+    // If new images are provided validate them; otherwise keep existing
+    let finalImages = property.image_urls;
+    if (image_urls && image_urls.length > 0) {
+      const validImages = image_urls.filter(
+        url => typeof url === 'string' && (url.startsWith('data:image/') || url.startsWith('http'))
+      );
+      if (validImages.length === 0) {
+        return res.status(400).json({ message: 'No valid images provided.' });
+      }
+      finalImages = validImages;
+    }
+
+    property.listing_type   = listing_type   ?? property.listing_type;
+    property.property_type  = property_type  ?? property.property_type;
+    property.city           = city           ?? property.city;
+    property.state          = state          ?? property.state;
+    property.address        = address        ?? property.address;
+    property.area_sqft      = area_sqft      != null ? parseFloat(area_sqft)  : property.area_sqft;
+    property.bhk            = bhk            != null ? (bhk ? parseInt(bhk) : null) : property.bhk;
+    property.price          = price          != null ? parseFloat(price)      : property.price;
+    property.description    = description    ?? property.description;
+    property.contact_number = contact_number ?? property.contact_number;
+    property.is_new_launch  = is_new_launch  ?? property.is_new_launch;
+    property.image_urls     = finalImages;
+
+    await property.save();
+    res.json({ message: 'Property updated successfully!', property });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+});
+
 module.exports = router;
 

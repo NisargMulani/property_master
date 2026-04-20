@@ -1,6 +1,6 @@
 import PropertyCard from './PropertyCard';
 
-export default function PropertyGrid({ properties, loading, error, onViewDetails }) {
+export default function PropertyGrid({ properties, loading, error, onViewDetails, isMyListing, onEdit }) {
   if (loading) {
     return (
       <div className="loading-spinner">
@@ -31,8 +31,15 @@ export default function PropertyGrid({ properties, loading, error, onViewDetails
   return (
     <div className="grid-3">
       {properties.map(p => (
-        <PropertyCard key={p._id} property={p} onViewDetails={onViewDetails} />
+        <PropertyCard
+          key={p._id}
+          property={p}
+          onViewDetails={onViewDetails}
+          isMyListing={isMyListing}
+          onEdit={onEdit}
+        />
       ))}
     </div>
   );
 }
+
