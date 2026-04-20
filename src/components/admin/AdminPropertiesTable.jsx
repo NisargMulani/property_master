@@ -43,7 +43,7 @@ export default function AdminPropertiesTable({ properties, loading, search, onSe
                       {p.image_urls?.[0] ? (
                         <img src={p.image_urls[0]} alt="" className="admin-prop-thumb" />
                       ) : (
-                        <div className="admin-prop-thumb admin-prop-thumb--placeholder">🏠</div>
+                        <div className="admin-prop-thumb admin-prop-thumb--placeholder"></div>
                       )}
                       <span className="admin-prop-name">
                         {p.address ? p.address.slice(0, 30) + (p.address.length > 30 ? '…' : '') : '—'}

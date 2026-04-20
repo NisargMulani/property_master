@@ -54,7 +54,6 @@ function requestLogger(req, res, next) {
   const method   = req.method;
   const url      = req.originalUrl || req.url;
 
-  // Hook into response finish to capture status + duration
   res.on('finish', () => {
     const duration = Date.now() - startAt;
     const status   = res.statusCode;
@@ -63,7 +62,6 @@ function requestLogger(req, res, next) {
     const now = new Date();
     const timestamp = now.toISOString().replace('T', ' ').replace('Z', '');
 
-    // ── Console output (coloured) ─────────────────────────────
     console.log(
       `${c.dim}[${timestamp}]${c.reset} ` +
       `${c.bold}${methodColor(method)}${method.padEnd(6)}${c.reset} ` +
@@ -72,7 +70,6 @@ function requestLogger(req, res, next) {
       `${c.dim}· ${ip} · ${duration}ms${c.reset}`
     );
 
-    // ── File output (plain text) ──────────────────────────────
     const line =
       `[${timestamp}] ${method.padEnd(6)} ${status} ${url} | IP: ${ip} | ${duration}ms\n`;
 

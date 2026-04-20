@@ -51,7 +51,6 @@ export default function AreaModal({ onClose }) {
           <p className="label">Result</p>
           <p className="value">{calcArea()}</p>
         </div>
-        <p className="note">*For informational purposes only</p>
       </div>
     </div>
   );

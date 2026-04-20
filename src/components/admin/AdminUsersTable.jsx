@@ -56,7 +56,7 @@ export default function AdminUsersTable({ users, loading, search, onSearchChange
                         onClick={() => onToggleRole(u)}
                         title={u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
                       >
-                        {u.role === 'admin' ? '↓ Demote' : '↑ Promote'}
+                        {u.role === 'admin' ? 'Demote' : 'Promote'}
                       </button>
                       <button
                         className="admin-btn-sm admin-btn-danger"

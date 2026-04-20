@@ -1,4 +1,3 @@
-// Shared utility for admin components
 export function formatDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -12,5 +11,3 @@ export function formatCurrency(val) {
   return '₹ ' + n.toLocaleString('en-IN');
 }
 
-// Note: auth token is automatically attached by the API interceptor in api.js
-// Do NOT manually read localStorage here — use the API instance for all requests

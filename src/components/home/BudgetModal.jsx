@@ -65,7 +65,7 @@ export default function BudgetModal({ onClose }) {
             <p className="budget-result-value">{calcBudget()}</p>
           </div>
         </div>
-        <p className="note">*Estimated at an average interest rate of 8.75%</p>
+        <p className="note">Estimated at an average interest rate of 8.75%</p>
       </div>
     </div>
   );
