@@ -2330,3 +2330,23 @@ input[type="file"] {
 .user-menu-admin-link:hover {
   background: #dbeafe;
 }
+
+.user-menu-my-listings-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #065f46;
+  background: #d1fae5;
+  border-radius: 6px;
+  text-decoration: none;
+  margin-bottom: 0.3rem;
+  transition: background 0.2s;
+}
+
+.user-menu-my-listings-link:hover {
+  background: #a7f3d0;
+}

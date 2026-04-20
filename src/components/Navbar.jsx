@@ -101,6 +101,13 @@ export default function Navbar({ showSearch = false }) {
                         Admin Panel
                       </Link>
                     )}
+                    <Link
+                      to="/listings?my=true"
+                      className="user-menu-my-listings-link"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      My Listings
+                    </Link>
                     <button onClick={() => { logout(); setMenuOpen(false); }}>
                       Sign Out
                     </button>

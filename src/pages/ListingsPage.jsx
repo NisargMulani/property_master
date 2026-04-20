@@ -6,6 +6,7 @@ import LoginModal           from '../components/LoginModal';
 import ListingsSearchBar    from '../components/listings/ListingsSearchBar';
 import PropertyGrid         from '../components/listings/PropertyGrid';
 import PropertyDetailModal  from '../components/listings/PropertyDetailModal';
+import { useAuth }          from '../context/AuthContext';
 import API from '../api';
 
 function buildResultLabel(listingType, propertyGroup, search, category) {
@@ -19,7 +20,8 @@ function buildResultLabel(listingType, propertyGroup, search, category) {
 }
 
 export default function ListingsPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { user }                                = useAuth();
+  const [searchParams, setSearchParams]         = useSearchParams();
   const [properties,       setProperties      ] = useState([]);
   const [loading,          setLoading         ] = useState(true);
   const [error,            setError           ] = useState('');
@@ -27,6 +29,7 @@ export default function ListingsPage() {
   const [showLogin,        setShowLogin       ] = useState(false);
   const [headerSearch,     setHeaderSearch    ] = useState(searchParams.get('search') || '');
 
+  const myOnly        = searchParams.get('my') === 'true';
   const listingType   = searchParams.get('listing_type');
   const propertyGroup = searchParams.get('property_group');
   const search        = searchParams.get('search');
@@ -36,22 +39,38 @@ export default function ListingsPage() {
   useEffect(() => {
     setLoading(true);
     setError('');
+
+    // "My Listings" mode — only properties added by the logged-in user
+    if (myOnly) {
+      if (!user) {
+        setError('Please log in to view your listings.');
+        setLoading(false);
+        setShowLogin(true);
+        return;
+      }
+      API.get('/properties/my')
+        .then(res => { setProperties(res.data); setLoading(false); })
+        .catch(err => { setError(err.response?.data?.message || 'Failed to load your listings.'); setLoading(false); });
+      return;
+    }
+
+    // Normal public listing with optional filters
     const params = {};
     if (listingType)   params.listing_type   = listingType;
     if (propertyGroup) params.property_group = propertyGroup;
     if (search)        params.search         = search;
     if (category) {
       const c = category.toLowerCase();
-      if (c === 'buy')                        params.listing_type   = 'Sell Property';
-      else if (c === 'rent')                  params.listing_type   = 'Rent / Lease Property';
-      else if (c === 'new launch' || c === 'projects') params.is_new_launch = true;
-      else if (c === 'commercial')            params.property_group = 'commercial';
-      else if (c === 'plot/lands')            params.property_group = 'plot/land';
+      if (c === 'buy')                                 params.listing_type   = 'Sell Property';
+      else if (c === 'rent')                           params.listing_type   = 'Rent / Lease Property';
+      else if (c === 'new launch' || c === 'projects') params.is_new_launch  = true;
+      else if (c === 'commercial')                     params.property_group = 'commercial';
+      else if (c === 'plot/lands')                     params.property_group = 'plot/land';
     }
     API.get('/properties', { params })
       .then(res => { setProperties(res.data); setLoading(false); })
       .catch(err => { setError(err.response?.data?.message || 'Failed to load properties.'); setLoading(false); });
-  }, [listingType, propertyGroup, search, category]);
+  }, [myOnly, listingType, propertyGroup, search, category, user]);
 
   function handleHeaderSearch() {
     const newParams = new URLSearchParams(searchParams);
@@ -66,15 +85,26 @@ export default function ListingsPage() {
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
 
       <main className="page-content">
-        <ListingsSearchBar
-          value={headerSearch}
-          onChange={setHeaderSearch}
-          onSearch={handleHeaderSearch}
-        />
+        {!myOnly && (
+          <ListingsSearchBar
+            value={headerSearch}
+            onChange={setHeaderSearch}
+            onSearch={handleHeaderSearch}
+          />
+        )}
 
         <div className="search-results-header">
-          <h3>Search Results</h3>
-          <p>{buildResultLabel(listingType, propertyGroup, search, category)}</p>
+          {myOnly ? (
+            <>
+              <h3>My Listings</h3>
+              <p>Properties added by your account ({properties.length} found)</p>
+            </>
+          ) : (
+            <>
+              <h3>Search Results</h3>
+              <p>{buildResultLabel(listingType, propertyGroup, search, category)}</p>
+            </>
+          )}
         </div>
 
         <PropertyGrid

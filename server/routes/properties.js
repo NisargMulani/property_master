@@ -40,6 +40,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/properties/my  (protected — listings added by the current user)
+router.get('/my', authenticateToken, async (req, res) => {
+  try {
+    const properties = await Property.find({ user_id: req.user.id })
+      .sort({ createdAt: -1 });
+    res.json(properties);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+});
+
 // GET /api/properties/:id  (public — full document including image_urls)
 router.get('/:id', async (req, res) => {
   try {
